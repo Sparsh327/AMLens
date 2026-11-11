@@ -1,0 +1,63 @@
+[project]
+name = "amlens"
+version = "0.1.0"
+description = "AI copilot for anti-money-laundering investigations"
+readme = "README.md"
+authors = [
+    { name = "sparshjaiswal", email = "sparsh.jas07@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aioodbc>=0.5.0",
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
+    "fastapi>=0.162.4",
+    "httpx>=0.28.1",
+    "kaggle>=2.2.5",
+    "pandas>=3.1.1",
+    "pyarrow>=26.0.1",
+    "pydantic-settings>=2.16.2",
+    "pyodbc>=5.5.0",
+    "sqlalchemy[asyncio]>=2.1.8",
+    "structlog>=26.1.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+    "mypy>=2.4.1",
+    "pandas-stubs>=3.1.0.261029",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1.post1",
+    "ruff>=0.17.4",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "BLE", "ASYNC", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["amlens"]
+
+[[tool.mypy.overrides]]
+module = ["aioodbc.*", "pyodbc.*", "kaggle.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
