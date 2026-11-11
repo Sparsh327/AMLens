@@ -1,0 +1,77 @@
+# Local infrastructure for AMLens.
+#   docker compose up -d      start everything
+#   docker compose ps         see health status
+#   docker compose down       stop (data kept in named volumes)
+#   docker compose down -v    stop AND delete all data
+# Neo4j (Week 2) and LiteLLM (Week 5) get added here later.
+
+name: amlens
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: amlens-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-amlens}
+      POSTGRES_USER: ${POSTGRES_USER:-amlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-amlens}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mssql:
+    # Developer edition: free, full-featured, not for production.
+    # The image is amd64-only; on Apple Silicon it runs under Rosetta emulation.
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: amlens-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_PASSWORD:?set MSSQL_PASSWORD in .env}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    container_name: amlens-mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --serve-artifacts
+    ports:
+      - "${MLFLOW_PORT:-5001}:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mssql_data:
+  mlflow_data:
