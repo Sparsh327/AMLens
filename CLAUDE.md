@@ -74,7 +74,7 @@ Each module: `models.py` (DB), `schemas.py` (Pydantic), `service.py` (logic), `r
 ## 5. Coding standards
 - uv for packages; ruff (lint + format); mypy strict on `src/`; pytest + pytest-asyncio
 - Type hints everywhere. No bare `except`. Custom exceptions in `core/exceptions.py`
-- Money = `Decimal` / `NUMERIC(18,2)`. Never float for amounts in app code (pandas analysis may use float, clearly separated)
+- Money = `Decimal` / `NUMERIC(18,2)`. Never float for amounts in app code (pandas analysis may use float, clearly separated). Exception: the MS SQL warehouse uses `DECIMAL(24,6)` because Bitcoin has 6 decimals (ADR 0001)
 - Timestamps = UTC `timestamptz`. IDs = UUID (source account/transaction IDs kept as given)
 - Config only via pydantic-settings + `.env` (`.env` gitignored, `.env.example` committed)
 - Seed every random process; data generation and splits must be reproducible
@@ -124,7 +124,7 @@ uv run mypy src
 ## 9. Current phase — Week 0 (4–8 Nov)
 - [ ] Repo `amlens` bootstrapped (layout, Docker: Postgres+pgvector, MS SQL, MLflow; FastAPI /health; CI green). Neo4j added in Week 2, LiteLLM in Week 5
 - [x] PRD in `docs/PRD.md`
-- [ ] IBM AMLworld HI-Small downloaded; explored in a notebook (Track B)
+- [x] IBM AMLworld HI-Small downloaded; explored in a notebook (Track B) → schema in `docs/decisions/0001-warehouse-schema.md`
 - [ ] Transactions + accounts loaded into MS SQL (Track A script, Track B schema decisions)
 - [ ] Discovery outreach sent to 10+ AML/compliance professionals → `docs/consulting/01-discovery.md`
 
