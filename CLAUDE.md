@@ -112,9 +112,9 @@ Interviewers will ask "did AI build this for you?". The repo must answer that on
 docker compose up -d              # postgres(+pgvector), mssql, neo4j, mlflow, litellm
 uv sync
 uv run python scripts/download_data.py
-uv run python scripts/load_mssql.py
+./scripts/odbc.sh uv run python scripts/load_mssql.py   # add --rebuild to reload; odbc.sh = macOS OpenSSL fix
 uv run alembic upgrade head
-uv run uvicorn amlens.api.main:app --reload
+./scripts/dev.sh                  # API with auto-reload (uvicorn via odbc.sh)
 uv run streamlit run ui/app.py
 uv run pytest
 uv run ruff check . && uv run ruff format .
@@ -125,7 +125,7 @@ uv run mypy src
 - [ ] Repo `amlens` bootstrapped (layout, Docker: Postgres+pgvector, MS SQL, MLflow; FastAPI /health; CI green). Neo4j added in Week 2, LiteLLM in Week 5
 - [x] PRD in `docs/PRD.md`
 - [x] IBM AMLworld HI-Small downloaded; explored in a notebook (Track B) → schema in `docs/decisions/0001-warehouse-schema.md`
-- [ ] Transactions + accounts loaded into MS SQL (Track A script, Track B schema decisions)
+- [x] Transactions + accounts loaded into MS SQL (Track A script, Track B schema decisions) → `scripts/load_mssql.py`
 - [ ] Discovery outreach sent to 10+ AML/compliance professionals → `docs/consulting/01-discovery.md`
 
 Update this checklist as work completes.

@@ -74,7 +74,7 @@ labels.transaction_attempts (transaction_id BIGINT, attempt_id INT, PK (transact
 
 - Every fiat amount has exactly 2 decimals.
 - Every **Bitcoin** amount has exactly **6** (e.g. `0.025852`).
-- At 2 decimals, 23,966 of 146,066 Bitcoin payments would be stored as `0.00`, and the rest would lose precision.
+- At 2 decimals, 23,965 of 146,066 Bitcoin payments would be stored as `0.00` (the notebook shows 23,966: one payment of exactly 0.005 rounds down as a float but up in exact DECIMAL; the loaded warehouse confirmed 23,965), and the rest would lose precision.
 - The largest amount is ~1.05 trillion Yen (13 integer digits).
 - `DECIMAL(24,6)` gives 18 integer digits and 6 decimals.
 - It costs 13 bytes per value instead of 9; at 5M rows × 2 columns that's ~40 MB, which is acceptable.

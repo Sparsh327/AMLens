@@ -11,3 +11,7 @@ class ConfigError(AMLensError):
 
 class DatabaseUnavailableError(AMLensError):
     """A database could not be reached."""
+
+
+class IngestionError(AMLensError):
+    """Source data is malformed or doesn't match what the loader expects."""
