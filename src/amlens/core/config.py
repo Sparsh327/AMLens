@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     mssql_user: str = "sa"
     mssql_password: SecretStr = SecretStr("change-me")
     mssql_driver: str = "ODBC Driver 18 for SQL Server"
+    # The warehouse database created by scripts/load_mssql.py (ADR 0001).
+    mssql_warehouse_db: str = "amlens_warehouse"
+    # Read-only login for the text-to-SQL tool: SELECT on schema `bank` only, no access to `labels`.
+    mssql_reader_user: str = "amlens_reader"
+    mssql_reader_password: SecretStr = SecretStr("change-me")
 
     # --- Health checks ---
     health_check_timeout_s: float = 3.0
@@ -52,12 +57,18 @@ class Settings(BaseSettings):
     @property
     def mssql_odbc_conn_str(self) -> str:
         """Raw ODBC connection string for MS SQL (used by aioodbc / pyodbc)."""
-        pw = self.mssql_password.get_secret_value()
+        return self.mssql_conn_str(self.mssql_db)
+
+    def mssql_conn_str(
+        self, database: str, user: str | None = None, password: SecretStr | None = None
+    ) -> str:
+        """ODBC connection string for any database / login (defaults: the admin login)."""
+        pw = (password or self.mssql_password).get_secret_value()
         return (
             f"DRIVER={{{self.mssql_driver}}};"
             f"SERVER={self.mssql_host},{self.mssql_port};"
-            f"DATABASE={self.mssql_db};"
-            f"UID={self.mssql_user};PWD={pw};"
+            f"DATABASE={database};"
+            f"UID={user or self.mssql_user};PWD={pw};"
             "TrustServerCertificate=yes;Encrypt=yes;"
         )
 
